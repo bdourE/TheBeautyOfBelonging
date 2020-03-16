@@ -22,7 +22,7 @@
  
 we also use  interpolation and vector arithmetic to explore the GAN Latent Space 
 
-![Sample of result](./images/animation.gif)
+![Sample of animation](./images/animation.gif)
  
  Later , We will  also train image resolution model to increase output size from (480x270 ) to (1920x1080) pixel 
  
