@@ -33,7 +33,7 @@ we also use  interpolation and vector arithmetic to explore the GAN Latent Space
 1. Clone the repository and navigate to the downloaded folder.
 	
 	```	
-		git clone https://github.com/bdourE/TheBeautyOfBelonging
+    git clone https://github.com/bdourE/TheBeautyOfBelonging
 	```
 2. Download the [Saudi Heritage Archicture dataset](https://drive.google.com/open?id=1VNvM5xlqKkJr1-T7mI1jaF3m6f_sO5jR).  Unzip the folder and place it in the repo, at folder Dataset .  
 
@@ -42,7 +42,7 @@ we also use  interpolation and vector arithmetic to explore the GAN Latent Space
 4. Open a terminal window and navigate to the project folder. use the following command to get generative artwork . generated atwork save in results folder.
 	
 	```
-		python generateArtwork.py
+    python generateArtwork.py
 	```
     
 5. if you like to create video of latent spece interpolotion , use the following command .
