@@ -24,7 +24,8 @@ we also use  interpolation and vector arithmetic to explore the GAN Latent Space
 
 ![Sample of animation](./images/animation.GIF)
  
- Later , We will  also train image resolution model to increase output size from (480x270 ) to (1920x1080) pixel 
+ Finally to present artwork video to 4D screen we use [pretraind wights](https://github.com/krasserm/super-resolution) to increase resolution of video from (480x270 ) to (1920x1080) pixel . 
+ 
  
  
 
@@ -55,6 +56,12 @@ we also use  interpolation and vector arithmetic to explore the GAN Latent Space
 
     ```
     python train.py
+    ```
+    
+7. you can also use function to increase the generated animation to increase reslution to 4D .
+    
+    ```
+    python 4d_converter.py -videoDir Results/animation.mp4
     ```
 
 
