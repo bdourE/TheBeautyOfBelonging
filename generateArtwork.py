@@ -27,8 +27,8 @@ b1 = 0.5
 b2  = 0.999
 latent_dim = 100
 
-img_height = 480
-img_width  = 270
+img_height = 512
+img_width  = 272
 channels = 3
 img_shape = (channels, img_height,  img_width )
 
@@ -38,77 +38,95 @@ CheckpointsDir = "state_dict"
 os.makedirs("{}".format(output), exist_ok=True)
 
 
+
 class Generator(nn.Module):
   def __init__(self, input_dim=100, channels=3, memory=8):
     super().__init__()
     self.input_dim = input_dim
     self.decoder = nn.Sequential(  # fully convolutional model
-        nn.ConvTranspose2d(input_dim, memory * 64, kernel_size=3, stride=2, padding=1, output_padding=1),
-        nn.BatchNorm2d(memory * 64),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 64, memory * 32, kernel_size=4, stride=3, padding=1),
-        nn.BatchNorm2d(memory * 32),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 32, memory * 16, kernel_size=4, stride=3, padding=1, output_padding=1),
-        nn.BatchNorm2d(memory * 16),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 16, memory * 8, kernel_size=4, stride=(2, 3), padding=1, output_padding=(0, 2)),
-        nn.BatchNorm2d(memory * 8),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 8, memory * 4, kernel_size=4, stride=(2, 3), padding=(1, 2)),
-        nn.BatchNorm2d(memory * 4),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 4, memory * 2, kernel_size=4, stride=(2, 1), padding=(1, 2)),
-        nn.BatchNorm2d(memory * 2),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 2, memory * 1, kernel_size=4, stride=(2, 1), padding=1),
-        nn.BatchNorm2d(memory * 1),
-        nn.ReLU(True),
-        nn.ConvTranspose2d(memory * 1, channels, kernel_size=4, stride=2, padding=1),
-        nn.Tanh(),
+
+      # input is Z, going into a convolution
+      nn.ConvTranspose2d( input_dim, memory * 64, 4, 1, 0, bias=False),
+      nn.BatchNorm2d(memory * 64),
+      nn.ReLU(True),
+      # state size.  4 x 4
+      nn.ConvTranspose2d(memory * 64, memory * 32, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 32),
+      nn.ReLU(True),
+      # state size. 8 x 8
+      nn.ConvTranspose2d( memory * 32, memory * 16, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 16),
+      nn.ReLU(True),
+      # state size. 16 x 16
+      nn.ConvTranspose2d( memory * 16, memory * 8, 4, (2,1), 1, bias=False),
+      nn.BatchNorm2d(memory * 8),
+      nn.ReLU(True),
+      # state size. 32 x 64
+      nn.ConvTranspose2d( memory * 8, memory * 4, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 4),
+      nn.ReLU(True),
+      # state size. 64 x 128
+      nn.ConvTranspose2d( memory * 4, memory * 2, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 2),
+      nn.ReLU(True),
+      # state size. 128 x 256
+      nn.ConvTranspose2d( memory * 2, memory, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory),
+      nn.ReLU(True),
+      # state size.  256 x 512
+      nn.ConvTranspose2d( memory, channels, 4, 2, 1, bias=False),
+      nn.Tanh()
+      # state size. 512 x 256
     )
 
   def forward(self, latent_code):
     return self.decoder(latent_code.view(-1, self.input_dim, 1, 1))
 
 
-
 class Discriminator(nn.Module):
   def __init__(self, channels=3, memory=8):
     super().__init__()
     self.features = nn.Sequential(  # fully convolutional model
-        nn.Conv2d(channels, memory * 64, kernel_size=4, stride=2, padding=1),
-        nn.BatchNorm2d(memory * 64),
-        nn.LeakyReLU(0.2, inplace=True),
-        
-        nn.Conv2d(memory * 64, memory * 32, kernel_size=4, stride=(2, 1), padding=1),
-        nn.BatchNorm2d(memory * 32),
-        nn.LeakyReLU(0.2, inplace=True),
 
-        nn.Conv2d(memory * 32, memory * 16, kernel_size=4, stride=(2, 1), padding=(1, 2)),
-        nn.BatchNorm2d(memory * 16),
-        nn.LeakyReLU(0.2, inplace=True),
-        
-        nn.Conv2d(memory * 16, memory * 8, kernel_size=4, stride=(2, 3), padding=(1, 2)),
-        nn.BatchNorm2d(memory * 8),
-        nn.LeakyReLU(0.2, inplace=True),
-        
-        nn.Conv2d(memory * 8, memory * 4, kernel_size=4, stride=(2, 3), padding=1),
-        nn.BatchNorm2d(memory * 4),
-        nn.LeakyReLU(0.2, inplace=True),
+      nn.Conv2d(channels, memory, 4, (2,1), 1, bias=False),
+      nn.LeakyReLU(0.2, inplace=True),
 
-        nn.Conv2d(memory * 4, memory * 2, kernel_size=4, stride=3, padding=1),
-        nn.BatchNorm2d(memory * 2),
-        nn.LeakyReLU(0.2, inplace=True),
-        
-        nn.Conv2d(memory * 2, memory * 1, kernel_size=4, stride=3, padding=1),
-        nn.BatchNorm2d(memory * 1),
-        nn.LeakyReLU(0.2, inplace=True),
-        nn.Conv2d(memory * 1, 1, kernel_size=3, stride=2, padding=1),
+      nn.Conv2d(memory, memory * 2, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 2),
+      nn.LeakyReLU(0.2, inplace=True),
+
+      nn.Conv2d(memory * 2, memory * 4, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 4),
+      nn.LeakyReLU(0.2, inplace=True),
+      
+      nn.Conv2d(memory * 4, memory * 8, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 8),
+      nn.LeakyReLU(0.2, inplace=True),
+
+      nn.Conv2d(memory * 8, memory * 16, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 16),
+      nn.LeakyReLU(0.2, inplace=True),
+
+      nn.Conv2d(memory * 16, memory * 32, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 32),
+      nn.LeakyReLU(0.2, inplace=True),
+
+      nn.Conv2d(memory * 32, memory * 64, 4, 2, 1, bias=False),
+      nn.BatchNorm2d(memory * 64),
+      nn.LeakyReLU(0.2, inplace=True),
+      
+      
+      nn.Conv2d(memory * 64, 1, 4, 1, 0, bias=False),
+      
+    
     )
 
+
   def forward(self, images):
+
     return self.features(images).flatten(1).mean(1, keepdim=True)
+
+
 
 
 # Loss weight for gradient penalty
@@ -132,8 +150,8 @@ def load_model(epoch):
     state = torch.load(f'state_dict/state_dict_{epoch}.pt')
     generator.load_state_dict(state['generator'])
     discriminator.load_state_dict(state['discriminator'])
-    optimizer_G.load_state_dict(state['g_optimizer'])
-    optimizer_D.load_state_dict(state['d_optimizer'])
+    #optimizer_G.load_state_dict(state['g_optimizer'])
+    #optimizer_D.load_state_dict(state['d_optimizer'])
 
 load_model(lastCheckpoint)
 
