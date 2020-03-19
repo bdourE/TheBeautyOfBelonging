@@ -25,6 +25,14 @@ we also use  interpolation and vector arithmetic to explore the GAN Latent Space
 ![Sample of animation](./images/animation.GIF)
  
  Finally to present artwork video to 4D screen we use [pretraind wights](https://github.com/krasserm/super-resolution) to increase resolution of video from (480x270 ) to (1920x1080) pixel . 
+
+- Befor  
+ 
+ ![Befor](./images/lowRes.png)
+ 
+ - After super reslution
+ 
+ ![ After super reslution](./images/HDRes.png)
  
  
  
